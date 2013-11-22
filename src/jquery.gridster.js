@@ -349,6 +349,85 @@
     };
 
 
+     /**
+     * Expand the widget. Width is set to the current grid width.
+     *
+     * @method expand_widget
+     * @param {HTMLElement} $widget The jQuery wrapped HTMLElement
+     *  representing the widget.
+     * @param {Number} size_y The number of rows that will occupy the widget.
+     * @param {Function} [callback] Function executed when the widget is removed.
+     * @return {HTMLElement} Returns $widget.
+     */
+    fn.expand_widget = function($widget, size_y, callback) {
+        var wgd = $widget.coords().grid;
+        size_x = this.cols;
+        size_y || (size_y = wgd.size_y);
+
+        var old_size_y = wgd.size_y;
+        $widget.attr('pre_expand_col', wgd.col);
+        $widget.attr('pre_expand_sizex', wgd.size_x);
+        $widget.attr('pre_expand_sizey', wgd.size_y);
+        var new_col = 1;
+
+        if (size_y > old_size_y) {
+            this.add_faux_rows(Math.max(size_y - old_size_y, 0));
+        }
+
+        var new_grid_data = {
+            col: new_col,
+            row: wgd.row,
+            size_x: size_x,
+            size_y: size_y,
+        };
+
+        this.mutate_widget_in_gridmap($widget, wgd, new_grid_data);
+
+        this.set_dom_grid_height();
+
+        if (callback) {
+            callback.call(this, new_grid_data.size_x, new_grid_data.size_y);
+        }
+
+        return $widget;
+    };
+
+    /**
+     * Collapse the widget to it's pre-expanded size
+     *
+     * @method expand_widget
+     * @param {HTMLElement} $widget The jQuery wrapped HTMLElement
+     *  representing the widget.
+     * @param {Function} [callback] Function executed when the widget is removed.
+     * @return {HTMLElement} Returns $widget.
+     */
+    fn.collapse_widget = function($widget, callback) {
+        var wgd = $widget.coords().grid;
+        size_x = parseInt($widget.attr('pre_expand_sizex'));
+        size_y = parseInt($widget.attr('pre_expand_sizey'));
+
+        var old_size_y = wgd.size_y;
+        var old_col = wgd.col;
+        var new_col = parseInt($widget.attr('pre_expand_col'));
+
+        var new_grid_data = {
+            col: new_col,
+            row: wgd.row,
+            size_x: size_x,
+            size_y: size_y
+        };
+
+        this.mutate_widget_in_gridmap($widget, wgd, new_grid_data);
+
+        this.set_dom_grid_height();
+
+        if (callback) {
+            callback.call(this, new_grid_data.size_x, new_grid_data.size_y);
+        }
+
+        return $widget;
+    };
+
     /**
     * Mutate widget dimensions and position in the grid map.
     *
